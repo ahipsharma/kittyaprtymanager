@@ -99,7 +99,13 @@
 
   <div class="card">
     <h3>Past Kitty Parties</h3>
-    <div id="pastContainer"></div>
+    <div class="card">
+      <button class="btn btn-primary" onclick="togglePast()">
+        View Past Parties
+      </button>
+
+      <div id="pastContainer" style="display:none; margin-top:20px;"></div>
+    </div>
   </div>
 
   <script type="module">
@@ -146,13 +152,16 @@
 
     window.saveParty = async function () {
       const date = document.getElementById("partyDate").value;
+      const todayDate = new Date().toISOString().split('T')[0];
+      if (date > todayDate) return alert("Date cannot be in the future.");
       if (!date) return alert("Please select date.");
 
       let partyData = { date: date, members: [] };
 
       members.forEach(member => {
-        const amount = document.getElementById(member).value;
-        if (amount && Number(amount) > 0) {
+        const amount = document.getElementById(member).value || 0;
+        console.log("amount", amount)
+        if (amount || Number(amount) >= 0) {
           partyData.members.push({
             name: member,
             amount: Number(amount)
@@ -161,7 +170,7 @@
       });
 
       await addDoc(collection(db, "kittyParties"), partyData);
-      alert("Saved to cloud 🎉");
+      // alert("Saved to cloud 🎉");
       location.reload();
     };
 
@@ -193,7 +202,21 @@
         pastContainer.appendChild(div);
       });
     }
+    let pastVisible = false;
 
+    window.togglePast = async function () {
+      const pastContainer = document.getElementById("pastContainer");
+
+      if (!pastVisible) {
+        pastContainer.style.display = "block";
+        pastContainer.innerHTML = "<p>Loading...</p>";
+        await loadParties();
+        pastVisible = true;
+      } else {
+        pastContainer.style.display = "none";
+        pastVisible = false;
+      }
+    };
     window.deleteParty = async function (id) {
       if (!confirm("Are you sure you want to delete this party?")) return;
       await deleteDoc(doc(db, "kittyParties", id));
