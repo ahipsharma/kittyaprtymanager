@@ -160,7 +160,6 @@
 
       members.forEach(member => {
         const amount = document.getElementById(member).value || 0;
-        console.log("amount", amount)
         if (amount || Number(amount) >= 0) {
           partyData.members.push({
             name: member,
